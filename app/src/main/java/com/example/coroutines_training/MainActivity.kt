@@ -13,9 +13,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
+
+    val TAG = "Threadd"
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,37 +30,19 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-
-
-        GlobalScope.launch {
-            val networkAnswer1 = doNetworkCall1()
-            val networkAnswer2 = doNetworkCall2()
-            Log.d("Thread", networkAnswer1)
-            Log.d("Thread", networkAnswer2)
-        }
-
-        GlobalScope.launch (newSingleThreadContext("FirstThread")){
-            delay(1000L)
-        }
-
-        Log.d("ThreadUi", "The current thread is ${Thread.currentThread().name}")
-        GlobalScope.launch(Dispatchers.IO) {
-            Log.d("ThreadUi", "The current thread is ${Thread.currentThread().name}")
-            val answer = doNetworkCall1()
-            withContext(Dispatchers.Main){
-                Log.d("ThreadUi", "The current thread is ${Thread.currentThread().name}")
-                findViewById<TextView>(R.id.dummy).text = answer
+        runBlocking {
+            launch {
+                delay(3000L)
+                Log.d(TAG, "End of launch #1")
             }
+
+            launch {
+                delay(3000L)
+                Log.d(TAG, "End of launch #2")
+            }
+            Log.d(TAG, "Start of runBlocking")
+            delay(5000L)
+            Log.d(TAG, "End of run Blocking")
         }
-    }
-
-    suspend fun doNetworkCall1(): String{
-        delay(5000L)
-        return "Network call ended"
-    }
-
-    suspend fun doNetworkCall2(): String{
-        delay(5000L)
-        return "Network call ended"
     }
 }
