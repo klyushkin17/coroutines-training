@@ -11,10 +11,12 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,19 +32,54 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        runBlocking {
-            launch {
-                delay(3000L)
-                Log.d(TAG, "End of launch #1")
+        val job = GlobalScope.launch(Dispatchers.Default){
+            Log.d(TAG, "Starting the process")
+            repeat(5){
+                Log.d(TAG, "The process is still running...")
+                delay(1000L)
             }
-
-            launch {
-                delay(3000L)
-                Log.d(TAG, "End of launch #2")
-            }
-            Log.d(TAG, "Start of runBlocking")
-            delay(5000L)
-            Log.d(TAG, "End of run Blocking")
         }
+
+        runBlocking {
+            job.join()
+            Log.d(TAG, "The Main thread can be continued")
+        }
+
+        val job1 = GlobalScope.launch(Dispatchers.Default) {
+            Log.d(TAG, "Starting the process")
+            for (i in 30..40)
+            {
+                if(isActive) {
+                    Log.d(TAG, "The fib of $i is ${fib(i)}")
+                }
+            }
+        }
+
+        runBlocking {
+            delay(3000L)
+            job1.cancel()
+            Log.d(TAG, "The fib calculation has been canceled")
+        }
+
+        GlobalScope.launch(Dispatchers.Default) {
+            Log.d(TAG, "Starting the process")
+            withTimeout(3000L)
+            {
+                for (i in 30..40) {
+                    if(isActive) {
+                            Log.d(TAG, "The fib of $i is ${fib(i)}")
+                    }
+                }
+            }
+        }
+
+        Log.d(TAG, "The fib calculation has been canceled")
+    }
+
+    fun fib (n: Int) : Long
+    {
+        if (n == 0) return 0
+        else if (n == 1) return 1
+        else return fib(n - 1) + fib(n - 2)
     }
 }
