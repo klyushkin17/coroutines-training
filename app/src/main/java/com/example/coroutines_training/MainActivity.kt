@@ -1,12 +1,16 @@
 package com.example.coroutines_training
 
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings.Global
 import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -34,23 +38,22 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        GlobalScope.launch(Dispatchers.IO) {
-            val time = measureTimeMillis {
-                val answer1 = async { NetworkCall1() }
-                val answer2 = async { NetworkCall2() }
-                Log.d(TAG, "Answer1 is a $answer1")
-                Log.d(TAG, "Answer2 is a $answer2")
+        findViewById<Button>(R.id.goToSecondActivity).setOnClickListener{
+
+            lifecycleScope.launch {
+                while(true){
+                    delay(1000L)
+                    Log.d(TAG, "The loop is still running...")
+                }
+            }
+
+            GlobalScope.launch {
+                delay(5000L)
+                Intent(this@MainActivity, SecondAcitvity::class.java).also {
+                    startActivity(it)
+                    finish()
+                }
             }
         }
-    }
-
-    suspend fun NetworkCall1() : String{
-        delay(3000L)
-        return "answer1"
-    }
-
-    suspend fun NetworkCall2() : String{
-        delay(3000L)
-        return "answer1"
     }
 }
